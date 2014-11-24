@@ -27,8 +27,11 @@ public:
     ~ofxPowerMate();
     
     void conecta();
-    void update(ofEventArgs & args);
+    void update();
     void setBrillo(int brillo);
+    void apaga();
+    void enciende();
+    
     ofEvent<powerData> tengoInfo;
 private:
     
@@ -38,6 +41,7 @@ private:
     int res;
     hid_device *handle;
 
+    float elapsed;
     powerData data;
 };
 
