@@ -17,7 +17,6 @@ class powerData {
 public:
     int direccion;
     int presionado;
-    int intensidad;
 };
 
 class ofxPowerMate {
@@ -27,17 +26,16 @@ public:
     ~ofxPowerMate();
     
     void conecta();
-    void update();
+    void update(ofEventArgs & arg);
+    
     void setBrillo(int brillo);
-    void apaga();
-    void enciende();
     
     ofEvent<powerData> tengoInfo;
 private:
     
    
-    wchar_t wstr[6];
-    unsigned char buf[6];
+    wchar_t wstr[256];
+    unsigned char buf[7];
     int res;
     hid_device *handle;
 

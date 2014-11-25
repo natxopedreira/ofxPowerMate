@@ -13,16 +13,15 @@ ofxPowerMate::ofxPowerMate(){
     //
     data.direccion = 0;
     data.presionado = 0;
-    data.intensidad = 0;
     
     elapsed = ofGetElapsedTimeMillis();
     //
-   // ofAddListener(ofEvents().update, this, &ofxPowerMate::update);
+    ofAddListener(ofEvents().update, this, &ofxPowerMate::update);
 }
 
 //--------------------------------------------------------------
 ofxPowerMate::~ofxPowerMate(){
-  //  ofRemoveListener(ofEvents().update, this, &ofxPowerMate::update);
+    ofRemoveListener(ofEvents().update, this, &ofxPowerMate::update);
 }
 
 //--------------------------------------------------------------
@@ -38,18 +37,6 @@ void ofxPowerMate::conecta(){
     
     // Set the hid_read() function to be non-blocking.
     hid_set_nonblocking(handle, 1);
-    
-   // enciende();
-    
-    unsigned char reportBuffer[9] = { 0 };
-    reportBuffer[0] = 0x00;
-    reportBuffer[1] = 0x41;
-    reportBuffer[2] = 0x01;
-    reportBuffer[3] = 0x04;	// command type
-    reportBuffer[4] = 0x00;	// select table
-    reportBuffer[5] = 0x02;	// select table
-    reportBuffer[6] = 0x00;	// select table
-    res = hid_write(handle, buf, sizeof(buf));
 
 }
 
@@ -57,64 +44,42 @@ void ofxPowerMate::conecta(){
 void ofxPowerMate::setBrillo(int brillo){
     // valor entre 0 - 255 ¿?¿
     //hid_set_nonblocking(handle, 1);
-    buf[0] = 0x00;
-    buf[1] = 0x41;
-    buf[2] = 0x01;
-    buf[3] = 0x04;	// command type
-    buf[4] = 0x00;	// select table
-    buf[5] = brillo;
+    unsigned char bufBrillo[8];
+    bufBrillo[0] = 0x41;
+    bufBrillo[1] = 0x01;
+    bufBrillo[2] = 0x01;
+    bufBrillo[3] = 0x00;	// command type
+    bufBrillo[4] = brillo;	// select table
+    bufBrillo[5] = 0x00;
+     bufBrillo[6] = 0x00;
+     bufBrillo[7] = 0x00;
+    res = hid_send_feature_report(handle, bufBrillo, sizeof(bufBrillo));
     
-    res = hid_write(handle, buf, sizeof(buf));
+    
+    //res = hid_write(handle, buf, bufbuf);
     
 }
 
-//--------------------------------------------------------------
-void ofxPowerMate::apaga(){
-    buf[0] = 0x00;
-    buf[1] = 0x41;
-    buf[2] = 0x01;
-    buf[3] = 0x03;	// command type
-    buf[4] = 0x00;	// select table
-    buf[5] = 0x00;
-    
-    res = hid_write(handle, buf, sizeof(buf));
-}
 
 //--------------------------------------------------------------
-void ofxPowerMate::enciende(){
-    buf[0] = 0x00;
-    buf[1] = 0x41;
-    buf[2] = 0x01;
-    buf[3] = 0x03;	// command type
-    buf[4] = 0x00;	// select table
-    buf[5] = 0x01;
-    
-    res = hid_write(handle, buf, sizeof(buf));
-    
-    setBrillo(255);
-}
-//--------------------------------------------------------------
-void ofxPowerMate::update(){
-    res = hid_read(handle, buf, sizeof(buf));
-    
-    
-    
+void ofxPowerMate::update(ofEventArgs & arg){
+
+    res = hid_read(handle, buf,  sizeof(buf));
+   
+   
     if(res>0 && ofGetElapsedTimeMillis() > elapsed+40){
         //hay datos
         
+        data.presionado = buf[0];
         data.direccion = buf[1];
         
-        //cout << data.direccion << endl;
-        
-        //hack en direccion porque no mantiene el valor
         if(data.direccion>200)
             data.direccion = 255;
         else
             data.direccion = 1;
         
         
-        data.presionado = buf[0];
-        data.intensidad = buf[3];
+        
         
         ofNotifyEvent(tengoInfo, data);
         
